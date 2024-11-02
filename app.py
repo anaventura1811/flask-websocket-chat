@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+from flask import Flask, render_template, request, session, redirect, url_for
+from flask_socketio import SocketIO, leave_room, join_room, send
 from dotenv import load_dotenv
 import os
 from helpers import generate_unique_code
+from datetime import datetime
 
 
 load_dotenv()
@@ -14,16 +15,16 @@ socketio = SocketIO(app)
 
 
 rooms = {}
-session = {}
 
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    session.clear()
     if request.method == 'POST':
         name = request.form.get("name")
         code = request.form.get("code")
-        join = request.form.get("join", False)
-        create = request.form.get("create", False)
+        join = request.form.get("join", "False")
+        create = request.form.get("create", "False")
 
         if not name:
             return render_template(
@@ -32,7 +33,7 @@ def home():
                 code=code,
                 name=name,
                 )
-        if join and not code:
+        if join != "False" and not code:
             return render_template(
                 'home.html',
                 error="Por favor, digite o código da sala",
@@ -40,7 +41,7 @@ def home():
                 name=name,
                 )
         room = code
-        if create:
+        if create != "False":
             room = generate_unique_code(length=4, rooms=rooms)
             rooms[room] = {"members": 0, "messages": []}
         elif code not in rooms:
@@ -50,21 +51,65 @@ def home():
                                    name=name)
         session["room"] = room
         session["name"] = name
+        return redirect(url_for("room"))
     return render_template('home.html')
 
 
-@app.route('/chat', methods=['GET'])
-def get_page():
-    return render_template('index.html')
+@app.route('/room', methods=['GET'])
+def room():
+    room = session.get("room")
+    if room is None or session.get("name") is None or room not in rooms:
+        return redirect(url_for("home"))
+    return render_template('room.html',
+                           room=room,
+                           messages=rooms[room]["messages"])
+
+
+@socketio.on("message")
+def message(data):
+    room = session.get("room")
+    if room not in rooms:
+        return
+    content = {
+        "name": session.get("name"),
+        "message": data["data"],
+        "time": str(datetime.now())
+    }
+    send(content, to=room)
+    rooms[room]["messages"].append(content)
+    print(f"{session.get('name')} said: {data['data']}")
 
 
 @socketio.on('connect')
 def connect():
-    print('>>>> Client is connected!!')
+    room = session.get("room")
+    name = session.get("name")
+    if not room or not name:
+        return
+    if room not in rooms:
+        leave_room(room)
+        return
+    join_room(room)
+    send({"name": name,
+          "message": "has entered the room",
+          "time": str(datetime.now())}, to=room)
+    rooms[room]["members"] += 1
+    print(f"{name} joined room {room}")
+    # print('>>>> Client is connected!!', auth)
 
 
 @socketio.on('disconnect')
 def disconnect():
+    room = session.get("room")
+    name = session.get("name")
+
+    leave_room(room)
+    if room in rooms:
+        rooms[room]["members"] -= 1
+        if rooms[room]["members"] <= 0:
+            del rooms[room]
+    send({"name": name, "message": "has left the room"}, to=room)
+    print(f"{name} has left the room {room}")
     print('Client has disconnect from sockets')
 
 

@@ -96,3 +96,17 @@ strong {
 .error-msg {
   color: red;
 }
+
+#messages {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inputs {
+  display: flex;
+}
+
+#send-btn {
+    width: 150px;
+}
