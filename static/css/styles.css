@@ -1,0 +1,98 @@
+body {
+  box-sizing: "box";
+  font-family: 'Poppins', sans-serif;
+  background-color: #faf9f6;
+}
+
+h3 {
+  align-self: center;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+}
+
+.username {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+input {
+  height: 35px;
+  padding: 8px;
+  padding-left: 12px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+label {
+  font-size: 12px;
+}
+
+button {
+  cursor: pointer;
+  height: 55px;
+  border: none;
+  padding: 8px 20px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  width: 100%;
+  background-color: #4BB543;
+  color: #fff;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.create {
+    background-color: #24a0ed;  
+}
+
+.join {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  gap: 2px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+#join-input {
+  height: unset;
+  width: 100%;
+  min-width: 180px;
+}
+
+.join-btn {
+    padding: 8px 20px;
+    width: 100%;
+    max-width: unset;
+    font-size: 14px;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+strong {
+  margin-bottom: 20px;
+}
+
+.error-msg {
+  color: red;
+}
