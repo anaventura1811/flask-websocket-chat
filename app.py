@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template
+from flask import request, session, redirect, url_for, Response
 from flask_socketio import SocketIO, leave_room, join_room, send
 from dotenv import load_dotenv
 import os
 from helpers import generate_unique_code
 from datetime import datetime
+from typing import Dict
 
 
 load_dotenv()
@@ -18,7 +20,7 @@ rooms = {}
 
 
 @app.route('/', methods=['GET', 'POST'])
-def home():
+def home() -> (str | Response):
     session.clear()
     if request.method == 'POST':
         name = request.form.get("name")
@@ -56,7 +58,7 @@ def home():
 
 
 @app.route('/room', methods=['GET'])
-def room():
+def room() -> (str | Response):
     room = session.get("room")
     if room is None or session.get("name") is None or room not in rooms:
         return redirect(url_for("home"))
@@ -66,7 +68,7 @@ def room():
 
 
 @socketio.on("message")
-def message(data):
+def message(data: Dict) -> None:
     room = session.get("room")
     if room not in rooms:
         return
@@ -81,7 +83,7 @@ def message(data):
 
 
 @socketio.on('connect')
-def connect():
+def connect() -> None:
     room = session.get("room")
     name = session.get("name")
     if not room or not name:
@@ -95,11 +97,10 @@ def connect():
           "time": str(datetime.now())}, to=room)
     rooms[room]["members"] += 1
     print(f"{name} joined room {room}")
-    # print('>>>> Client is connected!!', auth)
 
 
 @socketio.on('disconnect')
-def disconnect():
+def disconnect() -> None:
     room = session.get("room")
     name = session.get("name")
 

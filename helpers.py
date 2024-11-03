@@ -1,8 +1,9 @@
 import random
 from string import ascii_uppercase
+from typing import Dict
 
 
-def generate_unique_code(length, rooms):
+def generate_unique_code(length: int, rooms: Dict) -> str:
     while True:
         code = ""
         for _ in range(length):
